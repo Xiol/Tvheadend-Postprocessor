@@ -1,0 +1,26 @@
+---
+
+transcode_settings:
+    audio: -c:a libmp3lame -q:a 3
+    video: -c:v libx264 -preset veryfast -crf 21 -c:a ac3 -b:a 192k -sn
+
+notify_list:
+    person1@gmail.com:
+        - dragons.+den
+        - fake.reaction
+        - would.i.lie.to.you.?
+        - any.questions
+        - just.a.minute
+    person2@gmail.com
+        - coronation.street
+        - eastenders
+        - hollyoaks
+        - emmerdale
+        - dragons.+den
+        - fake.reaction
+        - would.i.lie.to.you.?
+
+default_notify: person1@gmail.com
+
+from_addr: tvheadend@mydomain.com
+
