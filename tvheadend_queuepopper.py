@@ -80,7 +80,7 @@ class EmailNotifier:
         message['To'] = email
         message['From'] = self.email_from
 
-        s = smtplib.SMTP('shrike.daneelwell.eu')
+        s = smtplib.SMTP('localhost')
         s.sendmail(self.email_from, email, message.as_string())
         s.quit()
         syslog("Email sent to '{}' for programme '{}'".format(email, video.title))
