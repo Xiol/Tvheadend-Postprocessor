@@ -57,7 +57,7 @@ class EmailNotifier:
                 Channel: {}
                 Filename: {}
                 Full Path: {}
-                """.format(video.title, video.channel, video.fname, video.tc_path))
+                """.format(video.title, video.channel, video.tc_fname, video.tc_path))
                 subject = "New Recording: {}".format(video.title)
             else:
                 msg = textwrap.dedent("""A failure occurred trying to transcode the video. See system logs.
