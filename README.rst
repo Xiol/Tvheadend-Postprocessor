@@ -1,7 +1,7 @@
 Tvheadend Postprocess Scripts
 =============================
 
-Postprocessor scripts to transcode videos and then send email notifications to interested parties.
+Postprocessor scripts to transcode videos and radio recordings and then send email notifications to interested parties.
 
 Requires ffmpeg, a working beanstalkd server and the Python packages ``beanstalkc`` and ``pyyaml``.
 
@@ -26,6 +26,8 @@ How I installed it:
 
     # Set your Tvheadend Postprocessor command to:
     /opt/tvhpp/env/bin/python /opt/tvhpp/tvheadend_postprocessor.py "%f" "%c" "%t" "%e"
+
+I've only tested this with Tvheadend's .mkv output format. If you're using pass-through, YMMV.
 
 License
 -------
