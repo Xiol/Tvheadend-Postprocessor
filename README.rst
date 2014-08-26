@@ -3,7 +3,7 @@ Tvheadend Postprocess Scripts
 
 Postprocessor scripts to transcode videos and then send email notifications to interested parties.
 
-Requires a working beanstalkd server and the Python packages ``beanstalkc`` and ``pyyaml``.
+Requires ffmpeg, a working beanstalkd server and the Python packages ``beanstalkc`` and ``pyyaml``.
 
 How I installed it:
 
