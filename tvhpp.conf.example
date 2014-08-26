@@ -24,3 +24,4 @@ default_notify: person1@gmail.com
 
 from_addr: tvheadend@mydomain.com
 
+email_host: localhost

@@ -15,13 +15,14 @@ from email.mime.text import MIMEText
 
 
 class EmailNotifier:
-    def __init__(self, notify_list, default, email_from):
+    def __init__(self, notify_list, default, email_from, email_host='localhost'):
         """
         :param notify_list: dict of [str, list]
         """
         self.notify_list = notify_list
         self.email_from = email_from
         self.default = default
+        self.email_host = email_host
 
     def send_notification(self, video, tc_done):
         """
@@ -80,7 +81,7 @@ class EmailNotifier:
         message['To'] = email
         message['From'] = self.email_from
 
-        s = smtplib.SMTP('localhost')
+        s = smtplib.SMTP(self.email_host)
         s.sendmail(self.email_from, email, message.as_string())
         s.quit()
         syslog("Email sent to '{}' for programme '{}'".format(email, video.title))
@@ -126,7 +127,7 @@ class Media:
         if self.transcode_settings is None:
             self.transcode_settings = {
                 'audio': "-c:a libmp3lame -q:a 3",
-                'video': "-c:v libx264 -preset veryfast -crf 21 -c:a ac3 -b:a 192 -sn"
+                'video': "-c:v libx264 -preset veryfast -crf 21 -c:a ac3 -b:a 192k -sn"
             }
 
     def determine_type(self):
@@ -139,25 +140,25 @@ class Media:
                 raise ValueError("Input type not supported.")
         return self.type
 
-        # def probe(self):
-
-    #        try:
-    #            out = subprocess.check_output(['ffprobe','-v','quiet','-print_format','json','-show_streams',self.path], stderr=subprocess.STDOUT)
-    #            self.probe_results = json.loads(out)
-    #        except subprocess.CalledProcessError as e:
-    #            syslog('ffprobe error, aborting. Exit code {}'.format(e.returncode))
-    #            sys.exit(1)
-    #        except ValueError as e:
-    #            syslog('ffprobe error, unable to load JSON results')
-    #            sys.exit(1)
-    #        except (KeyError, IndexError) as e:
-    #            syslog('ffprobe error, JSON output missing expected fields')
-    #            sys.exit(1)
+#    def probe(self):
+#        try:
+#            out = subprocess.check_output(['ffprobe','-v','quiet','-print_format','json','-show_streams',self.path], stderr=subprocess.STDOUT)
+#            self.probe_results = json.loads(out)
+#        except subprocess.CalledProcessError as e:
+#            syslog('ffprobe error, aborting. Exit code {}'.format(e.returncode))
+#            sys.exit(1)
+#        except ValueError as e:
+#            syslog('ffprobe error, unable to load JSON results')
+#            sys.exit(1)
+#        except (KeyError, IndexError) as e:
+#            syslog('ffprobe error, JSON output missing expected fields')
+#            sys.exit(1)
 
     def do_rename(self):
         if self.is_rename and not self.keep:
             try:
                 shutil.move(self.tc_path, self.path)
+                self.tc_path = self.path
             except OSError as e:
                 syslog("Unable to move converted file, error: {}".format(e.message))
 
@@ -197,6 +198,7 @@ class Media:
         try:
             out = subprocess.check_output(args, stderr=subprocess.STDOUT)
             self.tc_success = True
+            syslog("Transcode completed for {}".format(self.path))
         except subprocess.CalledProcessError as e:
             with open(self.fname_base + '.tc_err', 'w') as fh:
                 fh.write("Return code: {}\n\n".format(e.returncode))
@@ -228,7 +230,7 @@ if __name__ == '__main__':
     with open(options.config, 'r') as fh:
         config = yaml.load(fh.read())
 
-    notifier = EmailNotifier(config['notify_list'], config['default_notify'], config['from_addr'])
+    notifier = EmailNotifier(config['notify_list'], config['default_notify'], config['from_addr'], config['email_host'])
 
     beanstalk = beanstalkc.Connection()
     beanstalk.watch('transcoding')
@@ -237,7 +239,7 @@ if __name__ == '__main__':
     while True:
         job = beanstalk.reserve()
         media_info = json.loads(job.body)
-        job.delete()
         media = Media(notifier=notifier, keep=options.keep, transcode_settings=config['transcode_settings'],
                       **media_info)
         media.transcode()
+        job.delete()
