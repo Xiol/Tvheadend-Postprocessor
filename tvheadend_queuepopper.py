@@ -186,6 +186,11 @@ class Media:
             self.notify()
             return
 
+        if not os.path.exists(self.path):
+            self.status = "File no longer exists? Not doing anything."
+            self.notify()
+            return
+
         self.determine_type()
         self.set_tc_fname()
 
