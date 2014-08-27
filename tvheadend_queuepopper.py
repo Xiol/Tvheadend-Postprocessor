@@ -10,6 +10,7 @@ import json
 import uuid
 import argparse
 import yaml
+import atexit
 from syslog import syslog
 from email.mime.text import MIMEText
 
@@ -239,7 +240,9 @@ if __name__ == '__main__':
     while True:
         job = beanstalk.reserve()
         media_info = json.loads(job.body)
+        syslog("Retrieved transcode job for {}, queue age {}s".format(media_info['fname'], job.stats()['age']))
         media = Media(notifier=notifier, keep=options.keep, transcode_settings=config['transcode_settings'],
                       **media_info)
         media.transcode()
         job.delete()
+        syslog("{} job(s) remaining in queue".format(beanstalk.stats_tube('transcoding')['current-jobs-ready']))
